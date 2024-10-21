@@ -1,6 +1,6 @@
 import re
 
-from example import program
+from example import program_00
 
 tokens = [
     ("PROGRAMA", r"PROGRAMA"),
@@ -28,8 +28,8 @@ tokens = [
     ("NUMERO_REAL", r"\d+\.\d+"),
     ("IDENTIFICADOR", r"[A-Za-z_]\w*"),
     ("OPERADOR_ARITMETICO", r"[+\-*/]"),
-    ("PARENTESE_ESQ", r"\("),
-    ("PARENTESE_DIR", r"\)"),
+    ("COLCHETE_ESQ", r"\["),
+    ("COLCHETE_DIR", r"\]"),
     ("VIRGULA", r","),
     ("CADEIA_CARACTERES", r"'[^']*'"),
     ("COMENTARIO", r"\{[^}]*\}"),
@@ -66,6 +66,6 @@ def lex_analyzer(code):
 
 
 if __name__ == "__main__":
-    tokens = lex_analyzer(program)
+    tokens = lex_analyzer(program_00)
     for i, token in enumerate(tokens):
         print(i, token)

@@ -1,5 +1,5 @@
 from a import lex_analyzer
-from example import program
+from example import program_00, program_01, program_02
 
 
 class Parser:
@@ -24,21 +24,19 @@ class Parser:
             )
 
     def parse(self):
-        # <programa> ::= "PROGRAMA" <nome_do_programa> "INICIO" <corpo_do_programa> "FIM"
         self.eat("PROGRAMA")
-        self.eat("IDENTIFICADOR")
+        while self.token == "IDENTIFICADOR":
+            self.eat(self.token)
         self.eat("INICIO")
         self.corpo_do_programa()
         self.eat("FIM")
         print("Programa válido")
 
     def corpo_do_programa(self):
-        # <corpo_do_programa> ::= <declaracoes> <algoritmo>
         self.declaracoes()
         self.lista_comandos()
 
     def declaracoes(self):
-        # <lista_declaracoes> ::= <declaracao> | <declaracao> <lista_declaracoes>
         self.declaracao()
         while self.token in (
             "INTEIRO",
@@ -51,34 +49,30 @@ class Parser:
             self.declaracao()
 
     def declaracao(self):
-        # <declaracao> ::= <tipo> <identificador> [ "," <identificador> ]
-        self.tipo()
-        self.eat("IDENTIFICADOR")
-        while self.token == "VIRGULA":
-            self.eat("VIRGULA")
-            self.eat("IDENTIFICADOR")
-
-    def tipo(self):
-        # <tipo> ::= "INTEIRO" | "REAL" | "CARACTER" | "CADEIA" | "LISTA_INT" "[" <numero> "]" | "LISTA_REAL" "[" <numero> "]"
         if self.token in ("INTEIRO", "REAL", "CARACTER", "CADEIA"):
             self.eat(self.token)
+            self.eat("IDENTIFICADOR")
+            while self.token == "VIRGULA":
+                self.eat("VIRGULA")
+                self.eat("IDENTIFICADOR")
         elif self.token == "LISTA_INT":
             self.eat("LISTA_INT")
-            self.eat("PARENTESE_ESQ")
+            self.eat("IDENTIFICADOR")
+            self.eat("COLCHETE_ESQ")
             self.eat("NUMERO_INTEIRO")
-            self.eat("PARENTESE_DIR")
+            self.eat("COLCHETE_DIR")
         elif self.token == "LISTA_REAL":
             self.eat("LISTA_REAL")
-            self.eat("PARENTESE_ESQ")
+            self.eat("IDENTIFICADOR")
+            self.eat("COLCHETE_ESQ")
             self.eat("NUMERO_INTEIRO")
-            self.eat("PARENTESE_DIR")
+            self.eat("COLCHETE_DIR")
         else:
             raise Exception(
                 f"Tipo inválido na posição {self.pos}, mas encontrado {self.token}"
             )
 
     def lista_comandos(self):
-        # <lista_comandos> ::= <comando> | <comando> <lista_comandos>
         self.comando()
         while self.token in (
             "LEIA",
@@ -90,7 +84,6 @@ class Parser:
             self.comando()
 
     def comando(self):
-        # <comando> ::= <atribuicao> | <entrada> | <saida> | <selecao> | <repeticao>
         if self.token == "IDENTIFICADOR":
             self.atribuicao()
         elif self.token == "LEIA":
@@ -107,29 +100,38 @@ class Parser:
             )
 
     def atribuicao(self):
-        # <atribuicao> ::= <identificador> ":=" <expressao>
         self.eat("IDENTIFICADOR")
         self.eat("ATRIBUICAO")
         self.expressao()
 
     def entrada(self):
-        # <entrada> ::= "LEIA" <identificador> [ "," <identificador> ]
         self.eat("LEIA")
-        self.eat("IDENTIFICADOR")
+        self.identificador_ou_array()
         while self.token == "VIRGULA":
             self.eat("VIRGULA")
+            self.identificador_ou_array()
+
+    def identificador_ou_array(self):
+        self.eat("IDENTIFICADOR")
+        if self.token == "COLCHETE_ESQ":
+            self.eat("COLCHETE_ESQ")
             self.eat("IDENTIFICADOR")
+            self.eat("COLCHETE_DIR")
 
     def saida(self):
-        # <saida> ::= "ESCREVA" <valor_escrever> [ "," <valor_escrever> ]
         self.eat("ESCREVA")
-        self.eat("CADEIA_CARACTERES")
+        if self.token == "CADEIA_CARACTERES":
+            self.eat("CADEIA_CARACTERES")
+        elif self.token == "IDENTIFICADOR":
+            self.identificador_ou_array()
         while self.token == "VIRGULA":
             self.eat("VIRGULA")
-            self.eat("IDENTIFICADOR")
+            if self.token == "CADEIA_CARACTERES":
+                self.eat("CADEIA_CARACTERES")
+            elif self.token == "IDENTIFICADOR":
+                self.identificador_ou_array()
 
     def selecao(self):
-        # <selecao> ::= "SE" <expressao_relacional> "ENTAO" <lista_comandos> "FIM_SE"
         self.eat("SE")
         self.expressao_relacional()
         self.eat("ENTAO")
@@ -137,36 +139,32 @@ class Parser:
         self.eat("FIM_SE")
 
     def repeticao(self):
-        # <repeticao> ::= "ENQUANTO" <expressao_relacional> <lista_comandos> "FIM_ENQUANTO"
         self.eat("ENQUANTO")
         self.expressao_relacional()
         self.lista_comandos()
         self.eat("FIM_ENQUANTO")
 
     def expressao(self):
-        # <expressao> ::= <termo> | <termo> "+" <expressao> | <termo> "-" <expressao>
         self.fator()
         while self.token == "OPERADOR_ARITMETICO":
             self.eat(self.token)
             self.expressao()
 
     def fator(self):
-        # <fator> ::= <numero> | <identificador> | "(" <expressao> ")"
         if self.token in ("NUMERO_INTEIRO", "NUMERO_REAL"):
             self.eat(self.token)
         elif self.token == "IDENTIFICADOR":
-            self.eat("IDENTIFICADOR")
-        elif self.token == "PARENTESE_ESQ":
-            self.eat("PARENTESE_ESQ")
+            self.identificador_ou_array()
+        elif self.token == "COLCHETE_ESQ":
+            self.eat("COLCHETE_ESQ")
             self.expressao()
-            self.eat("PARENTESE_DIR")
+            self.eat("COLCHETE_DIR")
         else:
             raise Exception(
                 f"Fator inválido na posição {self.pos}, mas encontrado {self.token}"
             )
 
     def expressao_relacional(self):
-        # <expressao_relacional> ::= <expressao> ".M." <expressao> | <expressao> ".I." <expressao>
         self.expressao()
         if self.token in ("MAIOR", "IGUAL"):
             self.eat(self.token)
@@ -177,8 +175,18 @@ class Parser:
             )
 
 
-tokens = lex_analyzer(program)
-for i, token in enumerate(tokens):
-    print(i, token)
+if __name__ == "__main__":
+    tokens_00 = lex_analyzer(program_00)
+    for i, token in enumerate(tokens_00):
+        print(i, token)
+    parser = Parser(tokens_00).parse()
 
-parser = Parser(tokens).parse()
+    tokens_01 = lex_analyzer(program_01)
+    for i, token in enumerate(tokens_01):
+        print(i, token)
+    parser = Parser(tokens_01).parse()
+
+    tokens_02 = lex_analyzer(program_02)
+    for i, token in enumerate(tokens_02):
+        print(i, token)
+    parser = Parser(tokens_02).parse()
