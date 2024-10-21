@@ -30,6 +30,7 @@ class Parser:
         self.eat("INICIO")
         self.corpo_do_programa()
         self.eat("FIM")
+        print("Programa válido")
 
     def corpo_do_programa(self):
         # <corpo_do_programa> ::= <declaracoes> <algoritmo>
@@ -122,8 +123,10 @@ class Parser:
     def saida(self):
         # <saida> ::= "ESCREVA" <valor_escrever> [ "," <valor_escrever> ]
         self.eat("ESCREVA")
+        self.eat("CADEIA_CARACTERES")
         while self.token == "VIRGULA":
             self.eat("VIRGULA")
+            self.eat("IDENTIFICADOR")
 
     def selecao(self):
         # <selecao> ::= "SE" <expressao_relacional> "ENTAO" <lista_comandos> "FIM_SE"
