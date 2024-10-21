@@ -1,3 +1,7 @@
+#### 2018003703 - HENRIQUE CASTRO OLIVEIRA
+
+#### 2018005655 - WALDOMIRO BARBOSA ROMÃO
+
 # Item B - Gramática e Estrutura de Árvore Sintática para CalcBasica
 
 ## 1. Gramática da Linguagem CalcBasica
